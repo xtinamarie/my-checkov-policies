@@ -1,0 +1,14 @@
+metadata:
+  name: "Ensure ECR repository has image tag mutability set to IMMUTABLE"
+  id: "CKV_XM_AWS_ECR_41"
+  category: "GENERAL_SECURITY"
+scope:
+  provider: terraform
+definition:
+  and:
+    - cond_type: attribute
+      resource_types:
+        - aws_ecr_repository
+      attribute: image_tag_mutability
+      operator: equals
+      value: "IMMUTABLE"
