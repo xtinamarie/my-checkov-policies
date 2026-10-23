@@ -10,3 +10,8 @@ external-checks-dir:
 
 output: cli
 compact: true
+
+# Enforces warning mode (soft-fail) on recommended policies (LOW severity),
+# while keeping required policies (CRITICAL, HIGH, MEDIUM) as hard blocking gates.
+soft-fail-on:
+  - LOW

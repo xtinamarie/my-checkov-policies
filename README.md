@@ -59,6 +59,24 @@ mcp -d /path/to/terraform -o json
 # Show all available flags (same as checkov --help)
 mcp --help
 ```
+
+#### Enforcement & Warning Mode (Soft-blocking)
+
+Policies in this repository support two enforcement levels based on severity:
+
+- **Required policies (`CRITICAL`, `HIGH`, `MEDIUM`)**: Hard-blocking gates. Failures return a non-zero exit code (`1`), preventing non-compliant infrastructure from deploying.
+- **Recommended policies (`LOW`)**: Warning mode (soft-fail). Failures output full findings with official guideline documentation links, but exit with code `0` to prevent blocking deployment pipelines on recommendations.
+
+This behavior is supported both locally and in CI/CD pipelines:
+
+- **Local CLI (`mcp`)**: Defaults to `--soft-fail-on LOW` out of the box unless explicitly overridden with `--soft-fail`, `--soft-fail-on`, or `--hard-fail-on`.
+- **CI / Pipeline integration**: The repository root `.checkov.yaml` configures `soft-fail-on: [LOW]`. Pipelines running Checkov against these policies inherit this configuration automatically or via `--config-file .checkov.yaml`.
+
+To force hard failures on recommended checks as well, use `--hard-fail-on`:
+
+```bash
+mcp -d /path/to/terraform --hard-fail-on LOW
+```
 <br><br>
 # Adding a new custom policy
 
