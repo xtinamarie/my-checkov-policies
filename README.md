@@ -65,17 +65,27 @@ mcp --help
 Policies in this repository support two enforcement levels based on severity:
 
 - **Required policies (`CRITICAL`, `HIGH`, `MEDIUM`)**: Hard-blocking gates. Failures return a non-zero exit code (`1`), preventing non-compliant infrastructure from deploying.
-- **Recommended policies (`LOW`)**: Warning mode (soft-fail). Failures output full findings with official guideline documentation links, but exit with code `0` to prevent blocking deployment pipelines on recommendations.
+- **Recommended policies (`LOW`, `INFO`)**: Warning mode (soft-fail). Failures output full findings with official guideline documentation links, but exit with code `0` to prevent blocking deployment pipelines on recommendations.
 
-This behavior is supported both locally and in CI/CD pipelines:
+> **Note on severity spelling**: Checkov's valid severity keywords are `CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, and `INFO`. An unrecognized string like `INFORMATIONAL` silently defaults to `None` severity, which hard-fails:
+> - `severity: "INFO"` $\rightarrow$ exit 0
+> - `severity: "INFORMATIONAL"` $\rightarrow$ exit 1
+>
+> Setting `--soft-fail-on LOW` applies to all policies evaluated at these severities (Checkov compares severity with `<=`, meaning `LOW` automatically includes `INFO`).
 
-- **Local CLI (`mcp`)**: Defaults to `--soft-fail-on LOW` out of the box unless explicitly overridden with `--soft-fail`, `--soft-fail-on`, or `--hard-fail-on`.
-- **CI / Pipeline integration**: The repository root `.checkov.yaml` configures `soft-fail-on: [LOW]`. Pipelines running Checkov against these policies inherit this configuration automatically or via `--config-file .checkov.yaml`.
+This behavior is supported both locally and in CI validation:
 
-To force hard failures on recommended checks as well, use `--hard-fail-on`:
+- **Local CLI (`mcp`)**: Defaults to `--soft-fail-on LOW` out of the box unless explicitly overridden with `--soft-fail`, `-s`, `--soft-fail-on`, or `--hard-fail-on`.
+- **CI / Repository validation**: The repository root `.checkov.yaml` configures `soft-fail-on: [LOW]`. This applies when Checkov runs from this repo's root (or when this repo is the `-d` target or working directory). It does *not* travel with `--external-checks-dir` when external consumers import these policies.
+
+To force hard failures across all checks (including recommended guidelines), suppress the soft-fail injection using the `MCP_NO_SOFT_FAIL` escape hatch:
 
 ```bash
-mcp -d /path/to/terraform --hard-fail-on LOW
+# Via environment variable
+MCP_NO_SOFT_FAIL=1 mcp -d /path/to/terraform
+
+# Or via CLI flag
+mcp -d /path/to/terraform --no-soft-fail
 ```
 <br><br>
 # Adding a new custom policy
