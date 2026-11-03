@@ -10,3 +10,11 @@ external-checks-dir:
 
 output: cli
 compact: true
+
+# Enforces warning mode (soft-fail) on recommended policies (LOW severity),
+# while keeping required policies (CRITICAL, HIGH, MEDIUM) as hard blocking gates.
+# Note: This configuration only applies when this repository is the -d target or cwd
+# (e.g., when running checkov from this repo's root). It does not travel with the checks
+# when imported via --external-checks-dir.
+soft-fail-on:
+  - LOW
