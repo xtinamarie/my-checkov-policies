@@ -1,0 +1,38 @@
+# Intentionally requires enabled_cluster_log_types to include at least api, audit, and authenticator.
+# Clusters omitting enabled_cluster_log_types, setting an empty list, or missing any of the three
+# required log streams are rejected.
+#
+# Note on unresolved dynamic variables:
+# In Checkov's directory runner (HCL), if enabled_cluster_log_types = var.something where the variable has
+# no default value or tfvars supplied, Checkov cannot resolve the expression and silently drops
+# the resource from the scan report rather than flagging it.
+# To ensure enforcement when using dynamic variables, run Checkov against the compiled Terraform
+# execution plan (tfplan.json), where Terraform resolves all variables and provider defaults.
+metadata:
+  name: "Ensure EKS control plane logging includes api, audit, and authenticator"
+  id: "CKV_XM_AWS_EKS_5"
+  category: "LOGGING"
+  severity: "MEDIUM"
+  guideline: "https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html"
+scope:
+  provider: terraform
+definition:
+  and:
+    - cond_type: attribute
+      resource_types:
+        - aws_eks_cluster
+      attribute: enabled_cluster_log_types
+      operator: contains
+      value: "api"
+    - cond_type: attribute
+      resource_types:
+        - aws_eks_cluster
+      attribute: enabled_cluster_log_types
+      operator: contains
+      value: "audit"
+    - cond_type: attribute
+      resource_types:
+        - aws_eks_cluster
+      attribute: enabled_cluster_log_types
+      operator: contains
+      value: "authenticator"

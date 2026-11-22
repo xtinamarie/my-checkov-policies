@@ -1,0 +1,37 @@
+# Intentionally requires vpc_config.endpoint_public_access = false, or vpc_config.public_access_cidrs to not include 0.0.0.0/0.
+# Clusters exposing the Kubernetes API endpoint publicly to 0.0.0.0/0 are rejected.
+#
+# Note on unresolved dynamic variables:
+# In Checkov's directory runner (HCL), if endpoint_public_access = var.something where the variable has
+# no default value or tfvars supplied, Checkov cannot resolve the expression and silently drops
+# the resource from the scan report rather than flagging it.
+# To ensure enforcement when using dynamic variables, run Checkov against the compiled Terraform
+# execution plan (tfplan.json), where Terraform resolves all variables and provider defaults.
+metadata:
+  name: "Ensure EKS cluster API endpoint has restricted public access"
+  id: "CKV_XM_AWS_EKS_52"
+  category: "NETWORKING"
+  severity: "HIGH"
+  guideline: "https://docs.aws.amazon.com/eks/latest/userguide/cluster-endpoint.html"
+scope:
+  provider: terraform
+definition:
+  or:
+    - cond_type: attribute
+      resource_types:
+        - aws_eks_cluster
+      attribute: vpc_config.endpoint_public_access
+      operator: equals
+      value: false
+    - and:
+        - cond_type: attribute
+          resource_types:
+            - aws_eks_cluster
+          attribute: vpc_config.public_access_cidrs
+          operator: not_contains
+          value: "0.0.0.0/0"
+        - cond_type: attribute
+          resource_types:
+            - aws_eks_cluster
+          attribute: vpc_config.public_access_cidrs
+          operator: exists
